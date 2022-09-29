@@ -78,6 +78,7 @@ def main():
 
     # Initialize the dictionary for potentially simulating the low-count data
     sim_lc = {'type': None, 'constant': None}
+    sim_lc['type'] = simulate_low_count
 
     if simulate_low_count is not None:
         if simulate_low_count == 'gaussian':

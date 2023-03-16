@@ -40,7 +40,6 @@ def VDSR(input_shape, filters=64, kernel_initializer='he_normal'):
         x = tf.keras.layers.Conv2D(filters=filters, kernel_size=3, strides=1, activation=para_relu, kernel_initializer=kernel_initializer, padding='same') (x)
 
     x = tf.keras.layers.Conv2D(filters=1, kernel_size=3, kernel_initializer=kernel_initializer, padding='same') (x)
-    x = tf.keras.layers.Add() ([input, x])
     model = tf.keras.Model(input, x, name="VDSR")
 
     return model

@@ -47,7 +47,7 @@ class CustomDataGenerator(tf.keras.utils.Sequence):
         Executed at the end of every epoch (shuffling the order of the batches)
     """
     
-    def __init__(self, df, batch_size, target_shape, simulate_lc, augmentation=False):
+    def __init__(self, df, batch_size, target_shape, simulate_lc, augmentation=False, scale_range=[5000,15000]):
         if isinstance(df, pd.DataFrame):
             self.df = df.copy()
             self.n = len(self.df)
@@ -68,13 +68,17 @@ class CustomDataGenerator(tf.keras.utils.Sequence):
         self.indices = np.arange(self.n)
         self.target_shape = target_shape
         self.augmentation = augmentation
+        self.scale_range = scale_range
     
     def __get_normalized_image(self, path):
         img = np.asarray(Image.open(path).crop(box=self.cb), dtype=np.int32).astype(np.float32)
         return self.__normalize_image(img)
 
     def __normalize_image(self, img):
-        return (img - np.amin(img))/(np.amax(img) - np.amin(img))
+        scale = np.random.randint(low=self.scale_range[0], high=self.scale_range[1])
+        img = np.clip(img, a_min=0., a_max=None)
+        img = img / np.sum(img) * scale
+        return np.clip(img, a_min=0., a_max=1.)
 
     def __augment_data(self, lc, hc, id):
         if id == 0:
@@ -249,8 +253,8 @@ def get_dataframes_separate_datasets(train_folder, valid_folder, save_folder, ba
             _ = file.create_dataset('simulated_lc_train', data=train, dtype=np.float32)
             _ = file.create_dataset('simulated_lc_valid', data=valid, dtype=np.float32)
         print(f"Done.")
-        data_train = CustomDataGenerator(df=[fn, "simulated_lc_train"], batch_size=batch_size, target_shape=target_shape, simulate_lc=simulate_lc['type'], augmentation=augmentation_train)
-        data_valid = CustomDataGenerator(df=[fn, "simulated_lc_valid"], batch_size=batch_size, target_shape=target_shape, simulate_lc=simulate_lc['type'], augmentation=augmentation_valid)
+        data_train = CustomDataGenerator(df=[fn, "simulated_lc_train"], batch_size=batch_size, target_shape=target_shape, simulate_lc=simulate_lc['type'], augmentation=augmentation_train, scale_range=[5000,15000])
+        data_valid = CustomDataGenerator(df=[fn, "simulated_lc_valid"], batch_size=batch_size, target_shape=target_shape, simulate_lc=simulate_lc['type'], augmentation=augmentation_valid, scale_range=[10000,10001])
 
     return data_train, data_valid
 

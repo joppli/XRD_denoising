@@ -3,7 +3,7 @@ import os
 
 RNG_SEED = 0 # random seed to be used
 USE_GPU = False # whether or not to use a GPU
-GPU_ID = 1 # GPU index (if multiple GPUs available)
+GPU_ID = 0 # GPU index (if multiple GPUs available)
 GPU_MEM = 10000 # GPU memory to use (MB)
 
 os.environ["PYTHONHASHSEED"] = str(RNG_SEED)
@@ -14,9 +14,10 @@ if USE_GPU is True:
 import tensorflow as tf
 import sys
 
-from helper_functions import reset_random_seeds, calculate_global_mean_and_std, calculate_global_lambda, train_model
 from models import VDSR, IRUNet
 from loss_functions import mae_ssim_ms_loss
+
+import helper_functions as hf
 
 if USE_GPU is True:
     # Select a specific GPU and set the memory limit
@@ -55,12 +56,15 @@ def lr_scheduler(epoch, lr):
 def main():
 
     # Reset the random seed
-    reset_random_seeds(RNG_SEED)
+    hf.reset_random_seeds(RNG_SEED)
+
+    # If the data is in the form of HDF5, convert to TIF
+    generate_tif_from_hdf5 = True
 
     # Define some folders
-    base_folder = "output"
-    train_folder = "data/diffraction_data/train" 
-    valid_folder = "data/diffraction_data/validation" 
+    base_folder = "output" # path to base folder
+    train_folder = "data/diffraction_data/training" # path to folder containing training data
+    valid_folder = "data/diffraction_data/validation" # path to folder containing validation data
 
     # Define training parameters
     model_name = "trained_model" # name of the model (will be the folder containing the outputs within the base folder) 
@@ -84,7 +88,7 @@ def main():
         if simulate_low_count == 'gaussian':
             # Use either the average mean and standard deviation of all low-count frames
             # The noise is then obtained from a normal distribution using these two parameters
-            _, gmean, _, gstd = calculate_global_mean_and_std(train_folder+"/LC") # average mean and standard deviation of all low-count files
+            _, gmean, _, gstd = hf.calculate_global_mean_and_std(train_folder+"/LC") # average mean and standard deviation of all low-count files
             print(f"Global normalized mean value of LC: {gmean}")
             print(f"Global normalized standard deviation value of LC: {gstd}")
             sim_lc['constant'] = [gmean, gstd] # custom values can be used instead of the global mean and standard deviation
@@ -92,15 +96,21 @@ def main():
             # Define multiplicative factor lambda as the mean or median over the sum of low-count intensity
             # divided by the sum of high-count intensity for all frame pairs
             # The noise is then obtained from the Poisson distribution of lambda*high-count
-            lam = calculate_global_lambda(train_folder+"/LC", train_folder+"/HC", type='median')
+            lam = hf.calculate_global_lambda(train_folder+"/LC", train_folder+"/HC", type='median')
             print(f"Global lambda value: {lam}")
             sim_lc['constant'] = lam # custom value can be used instead of the global lambda
         else:
             raise ValueError("The type of simulated noise has to be either 'poisson' or 'gaussian'.")
 
+    if generate_tif_from_hdf5:
+        training_file = "" # path to HDF5 file containing the training data
+        validation_file = "" # path to the HDF5 file containing the validation data
+        hf.convert_zenodo_hdf5_to_tif(training_file, save_folder=train_folder)
+        hf.convert_zenodo_hdf5_to_tif(validation_file, save_folder=valid_folder)
+
     # Call to training function (add potential custom objects for the compiling step)
-    train_model(base_folder, model_name, model, input_shape, train_folder, valid_folder, n_epochs, batch_size, sim_lc, rng_seed=RNG_SEED, lrs=lrs) 
+    hf.train_model(base_folder, model_name, model, input_shape, train_folder, valid_folder, n_epochs, batch_size, sim_lc, rng_seed=RNG_SEED, lrs=lrs) 
 
 if __name__ == '__main__':
-    reset_random_seeds(RNG_SEED)
+    hf.reset_random_seeds(RNG_SEED)
     main()

@@ -17,4 +17,4 @@ Required packages (Python 3):
 
 Original work and data:
 - Oppliger, J., Denner, M.M., Küspert, J. et al., *Nat Mach Intell* **6**, 180–186 (2024). https://doi.org/10.1038/s42256-024-00790-1.
-- J. Oppliger et al., “X-ray diffraction dataset for experimental noise filtering.” Zenodo, Jul. 24, 2022. doi: 10.5281/zenodo.8237173.
+- J. Oppliger et al., “X-ray diffraction dataset for experimental noise filtering.” Zenodo, Jul. 24, 2022. https://doi.org/10.5281/zenodo.10816877.

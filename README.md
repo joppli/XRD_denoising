@@ -16,5 +16,5 @@ Required packages (Python 3):
 - tensorflow 2.4.1 (optional but recommended: tensorflow-gpu)
 
 Original work and data:
-- J. Oppliger et al., “Weak-signal extraction enabled by deep-neural-network denoising of diffraction data.” arXiv, Sep. 19, 2022. doi: 10.48550/arXiv.2209.09247.
+- Oppliger, J., Denner, M.M., Küspert, J. et al., *Nat Mach Intell* **6**, 180–186 (2024). https://doi.org/10.1038/s42256-024-00790-1.
 - J. Oppliger et al., “X-ray diffraction dataset for experimental noise filtering.” Zenodo, Jul. 24, 2022. doi: 10.5281/zenodo.8237173.
